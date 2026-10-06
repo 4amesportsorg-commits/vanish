@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0d14">
+<title>Vanish · private rooms that disappear</title>
+<style>
+:root{--bg:#0b0d14;--glass:rgba(255,255,255,.055);--line:rgba(255,255,255,.1);--fg:#eef0f7;--mute:#9097ad;--a:#7c6cff;--b:#22d3ee;--red:#ff4d6d;--grad:linear-gradient(135deg,var(--a),var(--b))}
+*{box-sizing:border-box;margin:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(40vmax 40vmax at 15% 10%,#4a3bff55,transparent 60%),radial-gradient(40vmax 40vmax at 85% 85%,#06b6d444,transparent 60%),radial-gradient(30vmax 30vmax at 80% 10%,#ff4d9a22,transparent 60%);animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:scale(1.15) translate(-2%,2%)}}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--glass);border-radius:12px;padding:9px 14px;transition:.15s;backdrop-filter:blur(12px)}
+button:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+button:active{transform:none}
+input{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:0;width:100%;transition:.15s}
+input:focus{border-color:var(--a);box-shadow:0 0 0 3px #7c6cff33}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:20px;backdrop-filter:blur(20px);padding:18px}
+.cta{background:var(--grad);border:0;font-weight:600;width:100%;padding:13px;box-shadow:0 8px 30px #7c6cff55}
+.cta:hover{background:var(--grad);filter:brightness(1.1)}
+/* home */
+#home{height:100%;overflow:auto;display:grid;place-items:center;padding:24px}
+.hero{max-width:460px;text-align:center;display:grid;gap:18px;animation:up .6s both}
+@keyframes up{from{opacity:0;transform:translateY(14px)}}
+.logo{width:68px;height:68px;margin:auto;border-radius:22px;background:var(--grad);display:grid;place-items:center;font-size:32px;box-shadow:0 10px 40px #7c6cff77;animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+h1{font-size:44px;letter-spacing:-1.5px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mute);font-size:16px}
+.hero .card{display:grid;gap:12px;text-align:left}
+.feats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.feats div{padding:12px 8px;border-radius:14px;background:var(--glass);border:1px solid var(--line);font-size:12px;color:var(--mute)}
+.feats b{display:block;color:var(--fg);font-size:13px;margin-bottom:2px}
+/* room */
+#room{height:100%;display:grid;grid-template-columns:1fr 400px;gap:14px;padding:14px}
+.stage,.chat{min-height:0;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;align-items:center;gap:8px}
+.brand{font-weight:700;font-size:18px;flex:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lock{font-size:12px;color:#5eead4;background:#10b98120;border:1px solid #10b98140;border-radius:99px;padding:5px 10px}
+#tiles{flex:1;min-height:0;display:none;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));grid-auto-rows:1fr;gap:10px}
+body.tiles #tiles{display:grid}
+body.tiles .lobby{display:none}
+.tile{position:relative;border-radius:20px;overflow:hidden;background:#12151f;border:1px solid var(--line);display:grid;place-items:center;min-height:140px;animation:up .4s both}
+.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent;transition:opacity .2s}
+.tile.nocam video{opacity:0}
+.tile .av{width:84px;height:84px;font-size:34px}
+.lbl{position:absolute;left:10px;bottom:10px;background:#000a;border-radius:99px;padding:3px 10px;font-size:12px;backdrop-filter:blur(8px)}
+.lobby{flex:1;display:flex;flex-direction:column;gap:14px;overflow:auto}
+.lobby h3{font-size:14px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+#people{list-style:none;padding:0;display:grid;gap:8px}
+#people li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);animation:up .3s both}
+.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:none;text-shadow:0 1px 2px #0005}
+.safe{margin-top:auto;padding:12px;border-radius:14px;border:1px dashed var(--line);font-size:12px;color:var(--mute)}
+.safe code{display:block;color:var(--fg);font:600 15px ui-monospace,monospace;letter-spacing:.06em;margin:4px 0}
+.bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px;border-radius:18px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(20px)}
+.bar button{min-width:46px}
+.bar .off{background:var(--red);border-color:transparent}
+.bar .hang{background:var(--red);border:0}
+.on-call{display:none}body.call .on-call{display:inline-block}body.call .off-call{display:none}
+.chat{background:var(--glass);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(20px);overflow:hidden;gap:0}
+#msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.m{max-width:82%;padding:9px 13px;border-radius:16px 16px 16px 4px;background:rgba(255,255,255,.09);word-break:break-word;white-space:pre-wrap;animation:pop .25s both}
+@keyframes pop{from{opacity:0;transform:scale(.94) translateY(6px)}}
+.m small{display:flex;gap:8px;justify-content:space-between;font-size:11px;color:var(--mute);margin-bottom:2px}
+.m.me{align-self:flex-end;background:var(--grad);border-radius:16px 16px 4px 16px}
+.m.me small{color:#ffffffbb}
+.sys{align-self:center;font-size:12px;color:var(--mute);background:rgba(255,255,255,.05);padding:3px 12px;border-radius:99px}
+.empty{margin:auto;text-align:center;color:var(--mute);font-size:13px}
+#f{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
+#f button{background:var(--grad);border:0;font-weight:600}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#1d2130;border:1px solid var(--line);padding:9px 16px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:860px){body{overflow:auto}#room{grid-template-columns:1fr;grid-template-rows:auto minmax(420px,1fr);height:auto;min-height:100%}.stage{max-height:none}#tiles{min-height:50vh}.lobby{flex:none}.chat{height:70vh}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+
+<main id="home"><div class="hero">
+  <div class="logo">👻</div>
+  <h1>Vanish</h1>
+  <p class="sub">Private rooms for chat, voice and video. Encrypted end to end, and gone the moment everyone leaves.</p>
+  <div class="card">
+    <p id="inv" hidden>🔐 You've been invited to a private room.</p>
+    <input id="nick" placeholder="Your name" maxlength="24" autocomplete="off">
+    <button class="cta" id="go">Create private room</button>
+  </div>
+  <div class="feats">
+    <div><b>🔐 E2E encrypted</b>AES-256, key never leaves your link</div>
+    <div><b>💨 Ephemeral</b>Nothing saved, ever</div>
+    <div><b>📹 Live calls</b>Voice &amp; video, peer to peer</div>
+  </div>
+</div></main>
+
+<div id="room" hidden>
+  <section class="stage">
+    <div class="top"><div class="brand">👻 Vanish</div><span class="lock">🔒 End-to-end encrypted</span><button id="copy">🔗 Invite</button><button id="leave">Leave</button></div>
+    <div id="tiles"></div>
+    <div class="card lobby">
+      <h3>In this room · <span id="count">1</span></h3>
+      <ul id="people"></ul>
+      <div class="safe">🛡 Safety code
+        <code id="safe">…</code>
+        Everyone in the room should see the same code. It changes if the invite link differs.</div>
+    </div>
+    <div class="bar">
+      <button class="off-call" id="va">🎤 Voice call</button>
+      <button class="off-call" id="vv">📹 Video call</button>
+      <button class="on-call" id="mic" title="Mute">🎙️</button>
+      <button class="on-call" id="cam" title="Camera">📷</button>
+      <button class="on-call hang" id="hang">📞 End call</button>
+    </div>
+  </section>
+  <section class="chat">
+    <div id="msgs"><div class="empty" id="empty">🔒<br>Messages are encrypted on your device.<br>They vanish when everyone leaves.</div></div>
+    <form id="f"><input id="txt" placeholder="Write a message…" autocomplete="off" maxlength="2000"><button>Send</button></form>
+  </section>
+</div>
+<div id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), te=new TextEncoder(), td=new TextDecoder();
+const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const unb64=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
+const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
+let ws,me,key,roomId,nick,local=null;
+const pcs={},peers={},mine={mic:true,cam:false,call:false};
+
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),2000)}
+function avatar(n){const a=el('div','av',(n||'?')[0].toUpperCase());let h=0;for(const c of n||'')h=(h*31+c.charCodeAt(0))%360;a.style.background=`linear-gradient(135deg,hsl(${h} 75% 55%),hsl(${(h+50)%360} 75% 45%))`;return a}
+
+// ---------- Home ----------
+if(location.hash.includes('.')){$('#inv').hidden=false;$('#go').textContent='Join room'}
+$('#nick').onkeydown=e=>e.key==='Enter'&&$('#go').click();
+$('#go').onclick=async()=>{
+  nick=$('#nick').value.trim()||'Guest '+(Math.floor(Math.random()*900)+100);
+  let h=location.hash.slice(1);
+  if(!h.includes('.')){h=b64(crypto.getRandomValues(new Uint8Array(12)))+'.'+b64(crypto.getRandomValues(new Uint8Array(32)));location.hash=h}
+  const[id,k]=h.split('.'),raw=unb64(k);
+  roomId=id;key=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt','decrypt']);
+  const d=[...new Uint8Array(await crypto.subtle.digest('SHA-256',raw))].slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('');
+  $('#safe').textContent=d.match(/.{4}/g).join(' ');
+  $('#home').hidden=true;$('#room').hidden=false;connect();
+};
+
+// ---------- Crypto: AES-256-GCM, key only in URL fragment ----------
+async function seal(o){const iv=crypto.getRandomValues(new Uint8Array(12));return{iv:b64(iv),ct:b64(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,te.encode(JSON.stringify(o))))}}
+async function open(d){return JSON.parse(td.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(d.iv)},key,unb64(d.ct))))}
+
+// ---------- Connection ----------
+function connect(){
+  ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
+  ws.onopen=()=>ws.send(JSON.stringify({type:'join',room:roomId}));
+  ws.onclose=()=>sys('Disconnected from room');
+  ws.onmessage=async({data})=>{
+    const m=JSON.parse(data);
+    if(m.type==='welcome'){me=m.id;m.peers.forEach(getPC);broadcast();people();sys('You joined the room')}
+    else if(m.type==='full'){alert('This room is full (max 8 people).');location.replace(location.pathname)}
+    else if(m.type==='joined'){getPC(m.id);broadcast();people()}
+    else if(m.type==='left'){sys((peers[m.id]?.name||'Someone')+' left');closePeer(m.id)}
+    else if(m.type==='signal')onSignal(m.from,m.data);
+    else if(m.type==='chat'){
+      try{const p=await open(m.data);
+        const first=!peers[m.from]?.name;
+        peers[m.from]={...peers[m.from],...p.st,name:p.name};
+        if(first)sys(p.name+' joined');
+        people();paint(m.from);
+        if(p.text)bubble(p.name,p.text,false)
+      }catch{sys('⚠️ A message could not be decrypted')}
+    }
+  };
+}
+const broadcast=async()=>ws.readyState===1&&ws.send(JSON.stringify({type:'chat',data:await seal({name:nick,st:mine})}));
+
+function people(){
+  const ul=$('#people');ul.replaceChildren();
+  [me,...Object.keys(pcs)].forEach(id=>{
+    const p=id===me?{name:nick+' (you)',...mine}:peers[id]||{name:'Joining…'};
+    const li=el('li');li.append(avatar(p.name),el('span',null,p.name));
+    if(p.call){const s=el('span',null,p.cam?'📹':'🎤');s.style.marginLeft='auto';li.append(s)}
+    ul.append(li)});
+  $('#count').textContent=Object.keys(pcs).length+1;
+}
+function sys(t){$('#empty')?.remove();$('#msgs').append(el('div','sys',t));$('#msgs').scrollTop=1e9}
+function bubble(n,t,mine){
+  $('#empty')?.remove();
+  const d=el('div','m'+(mine?' me':'')),s=el('small');
+  s.append(el('span',null,mine?'You':n),el('span',null,new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})));
+  d.append(s,document.createTextNode(t));$('#msgs').append(d);$('#msgs').scrollTop=1e9;
+}
+$('#f').onsubmit=async e=>{
+  e.preventDefault();const text=$('#txt').value.trim();if(!text||ws.readyState!==1)return;
+  ws.send(JSON.stringify({type:'chat',data:await seal({name:nick,st:mine,text})}));
+  bubble(nick,text,true);$('#txt').value='';
+};
+$('#copy').onclick=()=>{navigator.clipboard.writeText(location.href);toast('Invite link copied · share it privately')};
+$('#leave').onclick=()=>{endCall();ws.close();history.replaceState(null,'',location.pathname);location.reload()};
+addEventListener('beforeunload',()=>ws&&ws.close());
+
+// ---------- Calls: WebRTC mesh, media encrypted with DTLS-SRTP ----------
+const sig=(to,data)=>ws.send(JSON.stringify({type:'signal',to,data}));
+function getPC(id){
+  if(pcs[id])return pcs[id];
+  const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  const st=pcs[id]={pc,polite:me<id,making:false,ignore:false};
+  pc.onnegotiationneeded=async()=>{try{st.making=true;await pc.setLocalDescription();sig(id,{desc:pc.localDescription})}finally{st.making=false}};
+  pc.onicecandidate=e=>e.candidate&&sig(id,{cand:e.candidate});
+  pc.ontrack=e=>{const t=tile(id);t.querySelector('video').srcObject=e.streams[0];paint(id)};
+  if(local)local.getTracks().forEach(t=>pc.addTrack(t,local));
+  people();return st;
+}
+async function onSignal(from,{desc,cand}){
+  const st=getPC(from),pc=st.pc;
+  try{
+    if(desc){
+      st.ignore=!st.polite&&desc.type==='offer'&&(st.making||pc.signalingState!=='stable');
+      if(st.ignore)return;
+      await pc.setRemoteDescription(desc);
+      if(desc.type==='offer'){await pc.setLocalDescription();sig(from,{desc:pc.localDescription})}
+    }else if(cand){try{await pc.addIceCandidate(cand)}catch(e){if(!st.ignore)throw e}}
+  }catch(e){console.error(e)}
+}
+function closePeer(id){pcs[id]?.pc.close();delete pcs[id];delete peers[id];$('#t-'+id)?.remove();stage();people()}
+function stage(){document.body.classList.toggle('tiles',$('#tiles').children.length>0);document.body.classList.toggle('call',mine.call)}
+function tile(id){
+  let t=$('#t-'+id);if(t)return t;
+  t=el('div','tile nocam');t.id='t-'+id;
+  const v=el('video');v.autoplay=v.playsInline=true;if(id==='me')v.muted=true;
+  t.append(el('div'),v,el('span','lbl'));$('#tiles').append(t);stage();return t;
+}
+function paint(id){
+  const t=$('#t-'+id);if(!t)return;
+  const p=id==='me'?{...mine,name:nick}:peers[id]||{};
+  t.querySelector('.av,div').replaceWith(avatar(p.name||'?'));
+  t.querySelector('.lbl').textContent=(id==='me'?'You':p.name||'…')+(p.mic===false?'  🔇':'');
+  t.classList.toggle('nocam',!p.cam);
+}
+function syncUI(){
+  $('#mic').classList.toggle('off',!mine.mic);$('#mic').textContent=mine.mic?'🎙️':'🔇';
+  $('#cam').classList.toggle('off',!mine.cam);$('#cam').textContent=mine.cam?'📷':'🚫';
+  paint('me');stage();people();broadcast();
+}
+async function startCall(video){
+  if(local)return;
+  try{local=await navigator.mediaDevices.getUserMedia({audio:true,video:video&&{width:1280,height:720}})}
+  catch{return toast('Allow microphone/camera access (HTTPS required)')}
+  Object.assign(mine,{call:true,mic:true,cam:video});
+  tile('me').querySelector('video').srcObject=local;
+  Object.values(pcs).forEach(({pc})=>local.getTracks().forEach(t=>pc.addTrack(t,local)));
+  syncUI();
+}
+async function toggleCam(){
+  const v=local.getVideoTracks()[0];
+  if(v){v.enabled=mine.cam=!mine.cam}
+  else{
+    try{const s=await navigator.mediaDevices.getUserMedia({video:true}),t=s.getVideoTracks()[0];
+      local.addTrack(t);Object.values(pcs).forEach(({pc})=>pc.addTrack(t,local));mine.cam=true}
+    catch{return toast('Camera unavailable')}
+  }
+  syncUI();
+}
+function endCall(){
+  if(!local)return;
+  local.getTracks().forEach(t=>t.stop());
+  Object.values(pcs).forEach(({pc})=>pc.getSenders().forEach(s=>s.track&&pc.removeTrack(s)));
+  local=null;Object.assign(mine,{call:false,mic:true,cam:false});$('#t-me')?.remove();syncUI();
+}
+$('#va').onclick=()=>startCall(false);$('#vv').onclick=()=>startCall(true);
+$('#mic').onclick=()=>{local.getAudioTracks()[0].enabled=mine.mic=!mine.mic;syncUI()};
+$('#cam').onclick=toggleCam;$('#hang').onclick=endCall;
+</script>
+</body>
+</html>
