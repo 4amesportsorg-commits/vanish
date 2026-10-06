@@ -214,6 +214,9 @@ h1{font-size:clamp(40px,11vw,56px)}
 @media(pointer:coarse){input{font-size:16px}.top button,.bar .off-call{min-height:44px}#mini{width:44px;height:44px}}
 @media(hover:none){button:hover{transform:none}}
 .tile.fitall video{object-fit:contain}
+body.mirror .tile video{transform:scaleX(-1)}
+body.tiles:not(.min) .bar #mirror.lit{background:rgba(255,255,255,.92);color:#161a2a}
+@media(max-width:480px){body.call:not(.min) .bar{gap:10px;padding:10px 14px}body.call:not(.min) .bar .on-call{width:50px;height:50px}}
 </style>
 </head>
 <body>
@@ -260,6 +263,7 @@ h1{font-size:clamp(40px,11vw,56px)}
       <button class="on-call" id="mic" title="Mute"><i data-i="mic"></i></button>
       <button class="on-call" id="cam" title="Camera"><i data-i="video"></i></button>
       <button class="on-call" id="flip" title="Flip camera"><i data-i="flip"></i></button>
+      <button class="on-call" id="mirror" title="Mirror video"><i data-i="mirror"></i></button>
       <button class="on-call hang" id="hang" title="End call"><i data-i="phone" style="transform:rotate(135deg)"></i></button>
     </div>
   </section>
@@ -428,6 +432,7 @@ async function flip(){
   }catch{toast('Could not switch camera')}
 }
 $('#flip').onclick=flip;
+$('#mirror').onclick=()=>{const on=document.body.classList.toggle('mirror');$('#mirror').classList.toggle('lit',on);toast(on?'Mirror on: all videos flipped':'Mirror off: only your preview is flipped')};
 const I_={ghost:'<path d="M9 10h.01M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/>',
 lock:'<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
 zap:'<path d="M13 2 3 14h9l-1 8 10-12h-9z"/>',
@@ -440,7 +445,8 @@ phone:'<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0
 shield:'<path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.500-1.200 6.200-2.700a1.200 1.200 0 0 1 1.500 0C14.500 3.800 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
 link:'<path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.700 1.700"/><path d="M14 11a5 5 0 0 0-7.500-.5l-3 3a5 5 0 0 0 7 7l1.700-1.700"/>',
 send:'<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
-chev:'<path d="m6 9 6 6 6-6"/>'};
+chev:'<path d="m6 9 6 6 6-6"/>',
+mirror:'<path d="M12 3v18"/><path d="M8 7 3 12l5 5V7z"/><path d="m16 7 5 5-5 5V7z"/>'};
 const ic=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${I_[n]}</svg>`;
 document.querySelectorAll('i[data-i]').forEach(e=>{e.innerHTML=ic(e.dataset.i)});
 // speaking indicator: glow around the tile of whoever is talking
