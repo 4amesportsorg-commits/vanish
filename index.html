@@ -6,149 +6,93 @@
 <meta name="theme-color" content="#0b0d14">
 <title>Vanish · private rooms that disappear</title>
 <style>
-:root{--bg:#0b0d14;--glass:rgba(255,255,255,.055);--line:rgba(255,255,255,.1);--fg:#eef0f7;--mute:#9097ad;--a:#7c6cff;--b:#22d3ee;--red:#ff4d6d;--grad:linear-gradient(135deg,var(--a),var(--b))}
+:root{--bg:#111114;--glass:rgba(255,255,255,.04);--line:rgba(255,255,255,.08);--fg:rgba(255,255,255,.87);--mute:rgba(255,255,255,.55);--a:#7c6cff;--b:#22d3ee;--red:#ff4560;--grad:linear-gradient(135deg,var(--a),var(--b))}
 *{box-sizing:border-box;margin:0}
 [hidden]{display:none!important}
 html,body{height:100%}
-body{background:var(--bg);color:var(--fg);font:15px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
 .bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(40vmax 40vmax at 15% 10%,#4a3bff55,transparent 60%),radial-gradient(40vmax 40vmax at 85% 85%,#06b6d444,transparent 60%),radial-gradient(30vmax 30vmax at 80% 10%,#ff4d9a22,transparent 60%);animation:drift 18s ease-in-out infinite alternate}
 @keyframes drift{to{transform:scale(1.15) translate(-2%,2%)}}
 button,input{font:inherit;color:inherit}
-button{cursor:pointer;border:1px solid var(--line);background:var(--glass);border-radius:12px;padding:9px 14px;transition:.15s;backdrop-filter:blur(12px)}
-button:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+button{cursor:pointer;border:1px solid var(--line);background:var(--glass);border-radius:99px;padding:10px 20px;font-weight:500;transition:.2s cubic-bezier(0.4,0,0.2,1);backdrop-filter:blur(16px) saturate(120%);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+button:hover{background:rgba(255,255,255,.08);transform:translateY(-1px)}
 button:active{transform:none}
-input{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:0;width:100%;transition:.15s}
-input:focus{border-color:var(--a);box-shadow:0 0 0 3px #7c6cff33}
-.card{background:var(--glass);border:1px solid var(--line);border-radius:20px;backdrop-filter:blur(20px);padding:18px}
-.cta{background:var(--grad);border:0;font-weight:600;width:100%;padding:13px;box-shadow:0 8px 30px #7c6cff55}
+input{background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:99px;padding:12px 20px;outline:0;width:100%;transition:.2s cubic-bezier(0.4,0,0.2,1)}
+input:focus{border-color:var(--a);box-shadow:0 0 0 4px rgba(124,108,255,.15);background:rgba(0,0,0,.4)}
+.card{background:var(--glass);border:1px solid var(--line);border-radius:28px;backdrop-filter:blur(24px) saturate(120%);padding:24px;box-shadow:0 24px 48px -12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1)}
+.cta{background:var(--grad);border:0;font-weight:600;width:100%;padding:14px;color:#fff;box-shadow:0 8px 24px -6px rgba(124,108,255,.6)}
 .cta:hover{background:var(--grad);filter:brightness(1.1)}
 /* home */
 #home{height:100%;overflow:auto;display:grid;place-items:center;padding:24px}
-.hero{max-width:460px;text-align:center;display:grid;gap:18px;animation:up .6s both}
+.hero{max-width:460px;text-align:center;display:grid;gap:20px;animation:up .6s both}
 @keyframes up{from{opacity:0;transform:translateY(14px)}}
 .logo{width:68px;height:68px;margin:auto;border-radius:22px;background:var(--grad);display:grid;place-items:center;font-size:32px;box-shadow:0 10px 40px #7c6cff77;animation:float 4s ease-in-out infinite}
 @keyframes float{50%{transform:translateY(-6px)}}
 h1{font-size:44px;letter-spacing:-1.5px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 .sub{color:var(--mute);font-size:16px}
-.hero .card{display:grid;gap:12px;text-align:left}
+.hero .card{display:grid;gap:14px;text-align:left}
 .feats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.feats div{padding:12px 8px;border-radius:14px;background:var(--glass);border:1px solid var(--line);font-size:12px;color:var(--mute)}
-.feats b{display:block;color:var(--fg);font-size:13px;margin-bottom:2px}
+.feats div{padding:14px 10px;border-radius:20px;background:var(--glass);border:1px solid var(--line);font-size:12px;color:var(--mute);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.feats b{display:block;color:var(--fg);font-size:13px;margin-bottom:4px}
 /* room */
 #room{height:100%;display:grid;grid-template-columns:1fr 400px;gap:14px;padding:14px}
 .stage,.chat{min-height:0;display:flex;flex-direction:column;gap:12px}
-.top{display:flex;align-items:center;gap:8px}
+.top{display:flex;align-items:center;gap:10px}
 .brand{font-weight:700;font-size:18px;flex:1;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lock{font-size:12px;color:#5eead4;background:#10b98120;border:1px solid #10b98140;border-radius:99px;padding:5px 10px}
+.lock{font-size:12px;color:#5eead4;background:#10b98120;border:1px solid #10b98140;border-radius:99px;padding:6px 12px;font-weight:500}
 #tiles{flex:1;min-height:0;display:none;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));grid-auto-rows:1fr;gap:10px}
 body.tiles #tiles{display:grid;position:fixed;inset:0;z-index:50;min-height:0;background:#05070b;gap:0;padding:0;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));grid-auto-rows:1fr}
 #tiles .tile{border-radius:0;border:0;min-height:0;background:radial-gradient(circle at 50% 35%,#2b3050,#0a0c14)}
 #tiles .tile .av{width:120px;height:120px;font-size:48px}
 #t-me video{transform:scaleX(-1)}#t-me.back video{transform:none}
 #tiles[data-mode=grid]{padding:74px 8px 106px;gap:8px}
-#tiles[data-mode=grid] .tile{border-radius:18px}
+#tiles[data-mode=grid] .tile{border-radius:28px}
 #tiles[data-mode=pip] .tile:not(#t-me),#tiles[data-mode=solo] #t-me{position:absolute;inset:0}
-#tiles[data-mode=pip] #t-me{position:absolute;z-index:5;width:112px;height:160px;right:14px;top:90px;border-radius:16px;border:2px solid #ffffff40;box-shadow:0 8px 30px #0009;cursor:grab;touch-action:none;animation:none}
+#tiles[data-mode=pip] #t-me{position:absolute;z-index:5;width:112px;height:160px;right:14px;top:90px;border-radius:20px;border:2px solid #ffffff40;box-shadow:0 12px 40px #000a;cursor:grab;touch-action:none;animation:none}
 #tiles[data-mode=pip] #t-me .av{width:44px;height:44px;font-size:18px}
 #tiles[data-mode=pip] .lbl,#tiles[data-mode=solo] .lbl{display:none}
 #chead{display:none;position:fixed;top:0;left:0;right:0;z-index:55;text-align:center;padding:calc(16px + env(safe-area-inset-top,0px)) 60px 36px;background:linear-gradient(#000c,transparent);pointer-events:none}
 body.tiles #chead{display:block}
 #cname{font-size:20px;font-weight:600}.csub{font-size:12px;color:#ffffffbb;margin-top:2px}
-#mini{position:absolute;left:12px;top:calc(12px + env(safe-area-inset-top,0px));pointer-events:auto;border-radius:50%;width:40px;height:40px;padding:0;font-size:18px}
-#ret{display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:58;background:#16a34a;border-radius:99px;padding:7px 16px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 6px 20px #0006}
+#mini{position:absolute;left:12px;top:calc(12px + env(safe-area-inset-top,0px));pointer-events:auto;border-radius:50%;width:44px;height:44px;padding:0;font-size:20px}
+#ret{display:none;position:fixed;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:58;background:#10b981;border-radius:99px;padding:8px 20px;cursor:pointer;font-size:14px;font-weight:600;box-shadow:0 8px 24px #0006;color:#fff}
 body.min.tiles #ret,body.min.call #ret{display:block}
 body.min #tiles,body.min #chead{display:none!important}
-body.tiles:not(.min) .bar,body.call:not(.min) .bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:60;background:rgba(22,24,34,.85);border-radius:36px;padding:12px 18px;gap:14px;flex-wrap:nowrap;white-space:nowrap}
-body.call:not(.min) .bar .on-call{display:inline-grid;place-items:center;width:58px;height:58px;border-radius:50%;padding:0;font-size:23px}
+body.tiles:not(.min) .bar,body.call:not(.min) .bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:60;gap:14px;flex-wrap:nowrap;white-space:nowrap}
+body.call:not(.min) .bar .on-call{display:inline-grid;place-items:center;width:56px;height:56px;border-radius:50%;padding:0;font-size:22px}
 body.tiles .lobby{display:none}
-.tile{position:relative;border-radius:20px;overflow:hidden;background:#12151f;border:1px solid var(--line);display:grid;place-items:center;min-height:140px;animation:up .4s both}
+.tile{position:relative;border-radius:28px;overflow:hidden;background:rgba(255,255,255,.02);border:1px solid var(--line);display:grid;place-items:center;min-height:140px;animation:up .4s both;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:transparent;transition:opacity .2s}
 .tile.nocam video{opacity:0}
 .tile .av{width:84px;height:84px;font-size:34px}
-.lbl{position:absolute;left:10px;bottom:10px;background:#000a;border-radius:99px;padding:3px 10px;font-size:12px;backdrop-filter:blur(8px)}
+.lbl{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,.6);border-radius:99px;padding:4px 12px;font-size:12px;backdrop-filter:blur(12px)}
 .lobby{flex:1;display:flex;flex-direction:column;gap:14px;overflow:auto}
-.lobby h3{font-size:14px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.lobby h3{font-size:13px;color:var(--mute);font-weight:600;text-transform:uppercase;letter-spacing:.1em}
 #people{list-style:none;padding:0;display:grid;gap:8px}
-#people li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);animation:up .3s both}
-.av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:none;text-shadow:0 1px 2px #0005}
-.safe{margin-top:auto;padding:12px;border-radius:14px;border:1px dashed var(--line);font-size:12px;color:var(--mute)}
-.safe code{display:block;color:var(--fg);font:600 15px ui-monospace,monospace;letter-spacing:.06em;margin:4px 0}
-.bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:10px;border-radius:18px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(20px)}
+#people li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:20px;background:rgba(255,255,255,.03);animation:up .3s both;box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;flex:none;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.safe{margin-top:auto;padding:16px;border-radius:20px;border:1px dashed var(--line);font-size:12px;color:var(--mute);background:rgba(255,255,255,.02)}
+.safe code{display:block;color:var(--fg);font:600 15px ui-monospace,monospace;letter-spacing:.08em;margin:6px 0}
+.bar{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:12px 20px;border-radius:99px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(24px) saturate(120%);box-shadow:0 16px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1)}
 .bar button{min-width:46px}
-.bar .off{background:var(--red);border-color:transparent}
-.bar .hang{background:var(--red);border:0}
+.bar .off{background:var(--red);border-color:transparent;color:#fff}
+.bar .hang{background:var(--red);border:0;color:#fff;box-shadow:0 8px 24px -6px rgba(255,69,96,.6)}
 .on-call{display:none}body.call .on-call{display:inline-block}body.call .off-call{display:none}
-.chat{background:var(--glass);border:1px solid var(--line);border-radius:22px;backdrop-filter:blur(20px);overflow:hidden;gap:0}
-#msgs{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
-.m{max-width:82%;padding:9px 13px;border-radius:16px 16px 16px 4px;background:rgba(255,255,255,.09);word-break:break-word;white-space:pre-wrap;animation:pop .25s both}
+.chat{background:var(--glass);border:1px solid var(--line);border-radius:28px;backdrop-filter:blur(24px) saturate(120%);overflow:hidden;gap:0;box-shadow:0 24px 48px -12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1)}
+#msgs{flex:1;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.m{max-width:82%;padding:12px 16px;border-radius:24px 24px 24px 6px;background:rgba(255,255,255,.07);word-break:break-word;white-space:pre-wrap;animation:pop .25s both}
 @keyframes pop{from{opacity:0;transform:scale(.94) translateY(6px)}}
-.m small{display:flex;gap:8px;justify-content:space-between;font-size:11px;color:var(--mute);margin-bottom:2px}
-.m.me{align-self:flex-end;background:var(--grad);border-radius:16px 16px 4px 16px}
-.m.me small{color:#ffffffbb}
-.sys{align-self:center;font-size:12px;color:var(--mute);background:rgba(255,255,255,.05);padding:3px 12px;border-radius:99px}
-.empty{margin:auto;text-align:center;color:var(--mute);font-size:13px}
-#f{display:flex;gap:8px;padding:12px;border-top:1px solid var(--line)}
-#f button{background:var(--grad);border:0;font-weight:600}
-#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#1d2130;border:1px solid var(--line);padding:9px 16px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+.m small{display:flex;gap:8px;justify-content:space-between;font-size:11px;color:var(--mute);margin-bottom:4px;font-weight:500}
+.m.me{align-self:flex-end;background:var(--grad);border-radius:24px 24px 6px 24px;color:#fff;box-shadow:0 4px 12px -2px rgba(124,108,255,.25)}
+.m.me small{color:rgba(255,255,255,.8)}
+.sys{align-self:center;font-size:12px;color:var(--mute);background:rgba(255,255,255,.04);padding:4px 14px;border-radius:99px;backdrop-filter:blur(12px)}
+.empty{margin:auto;text-align:center;color:var(--mute);font-size:13px;line-height:1.6}
+#f{display:flex;gap:10px;padding:14px 18px;border-top:1px solid var(--line);background:rgba(0,0,0,.1)}
+#f button{background:var(--grad);border:0;font-weight:600;color:#fff}
+#toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:#22252f;color:#fff;border:1px solid var(--line);padding:10px 20px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s cubic-bezier(0.4,0,0.2,1);z-index:99;box-shadow:0 12px 32px rgba(0,0,0,.4)}
 #toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-width:860px){body{overflow:auto}#room{grid-template-columns:1fr;grid-template-rows:auto minmax(420px,1fr);height:auto;min-height:100%}.stage{max-height:none}#tiles{min-height:50vh}.lobby{flex:none}.chat{height:70vh}}
+@media(max-width:860px){body{overflow:auto}#room{grid-template-columns:1fr;grid-template-rows:auto minmax(420px,1fr);height:auto;min-height:100%}.stage{max-height:none}#tiles{min-height:50vh}.lobby{flex:none}.chat{height:70vh;margin-bottom:20px}}
 </style>
-</head>
-<body>
-<div class="bg"></div>
-
-<main id="home"><div class="hero">
-  <div class="logo">👻</div>
-  <h1>Vanish</h1>
-  <p class="sub">Private rooms for chat, voice and video. Encrypted end to end, and gone the moment everyone leaves.</p>
-  <div class="card">
-    <p id="inv" hidden>🔐 You've been invited to a private room.</p>
-    <input id="nick" placeholder="Your name" maxlength="24" autocomplete="off">
-    <input id="pw" type="password" placeholder="Room password (optional)" autocomplete="off">
-    <button class="cta" id="go">Create private room</button>
-    <div id="joinbox" style="display:grid;gap:10px;border-top:1px solid var(--line);padding-top:14px">
-      <span style="color:var(--mute);font-size:13px">Have an invite? Paste the link, or type the 8-character Room ID (and the password above):</span>
-      <input id="code" placeholder="Invite link or Room ID" autocomplete="off">
-      <button id="join">Join room</button>
-    </div>
-  </div>
-  <div class="feats">
-    <div><b>🔐 E2E encrypted</b>AES-256, key never leaves your link</div>
-    <div><b>💨 Ephemeral</b>Nothing saved, ever</div>
-    <div><b>📹 Live calls</b>Voice &amp; video, peer to peer</div>
-  </div>
-</div></main>
-
-<div id="room" hidden>
-  <section class="stage">
-    <div class="top"><div class="brand">👻 Vanish</div><span class="lock">🔒 End-to-end encrypted</span><button id="ridb" hidden title="Copy Room ID"></button><button id="copy">🔗 Invite</button><button id="leave">Leave</button></div>
-    <div id="tiles"></div>
-    <div id="chead"><button id="mini" title="Minimize call">⌄</button><div id="cname">Waiting for others…</div><div class="csub">🔒 End-to-end encrypted · <span id="ctime">00:00</span></div></div>
-    <div id="ret">📞 Tap to return to call · <span id="ctime2">00:00</span></div>
-    <div class="card lobby">
-      <h3>In this room · <span id="count">1</span></h3>
-      <ul id="people"></ul>
-      <div class="safe">🛡 Safety code
-        <code id="safe">…</code>
-        Everyone in the room should see the same code. It changes if the invite link differs.</div>
-    </div>
-    <div class="bar">
-      <button class="off-call" id="va">🎤 Voice call</button>
-      <button class="off-call" id="vv">📹 Video call</button>
-      <button class="on-call" id="mic" title="Mute">🎙️</button>
-      <button class="on-call" id="cam" title="Camera">📷</button>
-      <button class="on-call" id="flip" title="Flip camera">🔄</button>
-      <button class="on-call hang" id="hang" title="End call"><span style="display:inline-block;transform:rotate(135deg)">📞</span></button>
-    </div>
-  </section>
-  <section class="chat">
-    <div id="msgs"><div class="empty" id="empty">🔒<br>Messages are encrypted on your device.<br>They vanish when everyone leaves.</div></div>
-    <form id="f"><input id="txt" placeholder="Write a message…" autocomplete="off" maxlength="2000"><button>Send</button></form>
-  </section>
-</div>
-<div id="toast"></div>
-
-<script>
 const $=s=>document.querySelector(s), te=new TextEncoder(), td=new TextDecoder();
 const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const unb64=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
