@@ -86,7 +86,13 @@ body.tiles .lobby{display:none}
   <div class="card">
     <p id="inv" hidden>🔐 You've been invited to a private room.</p>
     <input id="nick" placeholder="Your name" maxlength="24" autocomplete="off">
+    <input id="pw" type="password" placeholder="Room password (optional)" autocomplete="off">
     <button class="cta" id="go">Create private room</button>
+    <div id="joinbox" style="display:grid;gap:10px;border-top:1px solid var(--line);padding-top:14px">
+      <span style="color:var(--mute);font-size:13px">Have an invite? Paste the link, or type the 8-character Room ID (and the password above):</span>
+      <input id="code" placeholder="Invite link or Room ID" autocomplete="off">
+      <button id="join">Join room</button>
+    </div>
   </div>
   <div class="feats">
     <div><b>🔐 E2E encrypted</b>AES-256, key never leaves your link</div>
@@ -97,7 +103,7 @@ body.tiles .lobby{display:none}
 
 <div id="room" hidden>
   <section class="stage">
-    <div class="top"><div class="brand">👻 Vanish</div><span class="lock">🔒 End-to-end encrypted</span><button id="copy">🔗 Invite</button><button id="leave">Leave</button></div>
+    <div class="top"><div class="brand">👻 Vanish</div><span class="lock">🔒 End-to-end encrypted</span><button id="ridb" hidden title="Copy Room ID"></button><button id="copy">🔗 Invite</button><button id="leave">Leave</button></div>
     <div id="tiles"></div>
     <div class="card lobby">
       <h3>In this room · <span id="count">1</span></h3>
@@ -126,21 +132,42 @@ const $=s=>document.querySelector(s), te=new TextEncoder(), td=new TextDecoder()
 const b64=b=>btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const unb64=s=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
 const el=(t,c,x)=>{const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e};
-let ws,me,key,roomId,nick,local=null;
+let ws,me,key,roomId,nick,local=null,leaving=false,ICE=[{urls:'stun:stun.l.google.com:19302'}];
+fetch('/ice').then(r=>r.json()).then(x=>{ICE=x}).catch(()=>{});
 const pcs={},peers={},mine={mic:true,cam:false,call:false};
 
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),2000)}
 function avatar(n){const a=el('div','av',(n||'?')[0].toUpperCase());let h=0;for(const c of n||'')h=(h*31+c.charCodeAt(0))%360;a.style.background=`linear-gradient(135deg,hsl(${h} 75% 55%),hsl(${(h+50)%360} 75% 45%))`;return a}
 
 // ---------- Home ----------
-if(location.hash.includes('.')){$('#inv').hidden=false;$('#go').textContent='Join room'}
-$('#nick').onkeydown=e=>e.key==='Enter'&&$('#go').click();
+const H0=location.hash.slice(1);
+if(H0){$('#inv').hidden=false;$('#go').textContent='Join room';$('#joinbox').style.display='none';
+  if(H0.includes('.'))$('#pw').hidden=true;else $('#inv').textContent='🔐 Invited to a password-protected room. Enter your name and the room password.'}
+$('#nick').addEventListener('keydown',e=>{if(e.key==='Enter')$('#go').click()});
+$('#code').addEventListener('keydown',e=>{if(e.key==='Enter')$('#join').click()});
+$('#join').onclick=()=>{
+  const v=$('#code').value.trim();let h=v.includes('#')?v.split('#').pop():v;
+  if(!h.includes('.'))h=h.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!/^[\w-]{8,64}\.[\w-]{40,}$/.test(h)&&!/^[A-Z2-9]{8}$/.test(h))return toast('Enter the full invite link or the 8-character Room ID');
+  location.hash=h;$('#go').click();
+};
 $('#go').onclick=async()=>{
   nick=$('#nick').value.trim()||'Guest '+(Math.floor(Math.random()*900)+100);
-  let h=location.hash.slice(1);
-  if(!h.includes('.')){h=b64(crypto.getRandomValues(new Uint8Array(12)))+'.'+b64(crypto.getRandomValues(new Uint8Array(32)));location.hash=h}
-  const[id,k]=h.split('.'),raw=unb64(k);
-  roomId=id;key=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt','decrypt']);
+  let h=location.hash.slice(1),raw;const pw=$('#pw').value;
+  if(!h){
+    if(pw){const A='ABCDEFGHJKMNPQRSTUVWXYZ23456789';h=[...crypto.getRandomValues(new Uint8Array(8))].map(x=>A[x%A.length]).join('')}
+    else h=b64(crypto.getRandomValues(new Uint8Array(12)))+'.'+b64(crypto.getRandomValues(new Uint8Array(32)));
+    location.hash=h;
+  }
+  if(h.includes('.')){const[id,k]=h.split('.');roomId=id;raw=unb64(k)}
+  else{
+    if(!pw)return toast('Enter the room password');
+    roomId=h;
+    const base=await crypto.subtle.importKey('raw',te.encode(pw),'PBKDF2',false,['deriveBits']);
+    raw=new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:te.encode('vanish:'+roomId),iterations:310000},base,256));
+    $('#ridb').hidden=false;$('#ridb').textContent='Room ID '+roomId.slice(0,4)+'-'+roomId.slice(4);
+  }
+  key=await crypto.subtle.importKey('raw',raw,'AES-GCM',false,['encrypt','decrypt']);
   const d=[...new Uint8Array(await crypto.subtle.digest('SHA-256',raw))].slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('');
   $('#safe').textContent=d.match(/.{4}/g).join(' ');
   $('#home').hidden=true;$('#room').hidden=false;connect();
@@ -154,7 +181,7 @@ async function open(d){return JSON.parse(td.decode(await crypto.subtle.decrypt({
 function connect(){
   ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host);
   ws.onopen=()=>ws.send(JSON.stringify({type:'join',room:roomId}));
-  ws.onclose=()=>sys('Disconnected from room');
+  ws.onclose=()=>{if(leaving)return;sys('Connection lost · reconnecting…');Object.keys(pcs).forEach(closePeer);setTimeout(connect,2000)};
   ws.onmessage=async({data})=>{
     const m=JSON.parse(data);
     if(m.type==='welcome'){me=m.id;m.peers.forEach(getPC);broadcast();people();sys('You joined the room')}
@@ -165,10 +192,13 @@ function connect(){
     else if(m.type==='chat'){
       try{const p=await open(m.data);
         const first=!peers[m.from]?.name;
+        p.name=String(p.name||'?').slice(0,24);
         peers[m.from]={...peers[m.from],...p.st,name:p.name};
+        if(p.st&&p.st.call===false&&$('#t-'+m.from)){$('#t-'+m.from).remove();stage()}
+        if(p.st&&p.st.call&&!$('#t-'+m.from)&&pcs[m.from])attach(m.from);
         if(first)sys(p.name+' joined');
         people();paint(m.from);
-        if(p.text)bubble(p.name,p.text,false)
+        if(p.text)bubble(p.name,String(p.text).slice(0,2000),false)
       }catch{sys('⚠️ A message could not be decrypted')}
     }
   };
@@ -196,15 +226,16 @@ $('#f').onsubmit=async e=>{
   ws.send(JSON.stringify({type:'chat',data:await seal({name:nick,st:mine,text})}));
   bubble(nick,text,true);$('#txt').value='';
 };
-$('#copy').onclick=()=>{navigator.clipboard.writeText(location.href);toast('Invite link copied · share it privately')};
-$('#leave').onclick=()=>{endCall();ws.close();history.replaceState(null,'',location.pathname);location.reload()};
-addEventListener('beforeunload',()=>ws&&ws.close());
+$('#copy').onclick=()=>{navigator.clipboard.writeText(location.href);toast(location.hash.includes('.')?'Invite link copied · share it privately':'Link copied · share the password separately')};
+$('#ridb').onclick=()=>{navigator.clipboard.writeText(roomId);toast('Room ID copied')};
+$('#leave').onclick=()=>{leaving=true;endCall();ws.close();history.replaceState(null,'',location.pathname);location.reload()};
+addEventListener('beforeunload',()=>{leaving=true;ws&&ws.close()});
 
 // ---------- Calls: WebRTC mesh, media encrypted with DTLS-SRTP ----------
 const sig=(to,data)=>ws.send(JSON.stringify({type:'signal',to,data}));
 function getPC(id){
   if(pcs[id])return pcs[id];
-  const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});
+  const pc=new RTCPeerConnection({iceServers:ICE});
   const st=pcs[id]={pc,polite:me<id,making:false,ignore:false};
   pc.onnegotiationneeded=async()=>{try{st.making=true;await pc.setLocalDescription();sig(id,{desc:pc.localDescription})}finally{st.making=false}};
   pc.onicecandidate=e=>e.candidate&&sig(id,{cand:e.candidate});
@@ -230,6 +261,10 @@ function tile(id){
   t=el('div','tile nocam');t.id='t-'+id;
   const v=el('video');v.autoplay=v.playsInline=true;if(id==='me')v.muted=true;
   t.append(el('div'),v,el('span','lbl'));$('#tiles').append(t);stage();return t;
+}
+function attach(id){
+  const tr=pcs[id].pc.getReceivers().map(r=>r.track).filter(t=>t&&t.readyState==='live');
+  if(!tr.length)return;tile(id).querySelector('video').srcObject=new MediaStream(tr);paint(id);
 }
 function paint(id){
   const t=$('#t-'+id);if(!t)return;
