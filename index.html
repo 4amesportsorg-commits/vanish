@@ -149,6 +149,7 @@ $('#join').onclick=()=>{
   const v=$('#code').value.trim();let h=v.includes('#')?v.split('#').pop():v;
   if(!h.includes('.'))h=h.toUpperCase().replace(/[^A-Z0-9]/g,'');
   if(!/^[\w-]{8,64}\.[\w-]{40,}$/.test(h)&&!/^[A-Z2-9]{8}$/.test(h))return toast('Enter the full invite link or the 8-character Room ID');
+  if(!h.includes('.')&&!$('#pw').value)return toast('Type the room password in the box above first');
   location.hash=h;$('#go').click();
 };
 $('#go').onclick=async()=>{
