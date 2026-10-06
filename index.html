@@ -213,6 +213,7 @@ h1{font-size:clamp(40px,11vw,56px)}
 /* touch screens: no zoom on focus, bigger tap targets, no stuck hover lift */
 @media(pointer:coarse){input{font-size:16px}.top button,.bar .off-call{min-height:44px}#mini{width:44px;height:44px}}
 @media(hover:none){button:hover{transform:none}}
+.tile.fitall video{object-fit:contain}
 </style>
 </head>
 <body>
@@ -452,11 +453,14 @@ function watch(st,el){
     (function tick(){if(!el.isConnected)return;an.getByteFrequencyData(d);let x=0;for(const v of d)x+=v;el.classList.toggle('talk',x/d.length>20);requestAnimationFrame(tick)})();
   }catch{}
 }
+// show the whole picture when video and tile have different orientations (phone portrait vs PC landscape)
+const fit=t=>{const v=t.querySelector('video'),r=t.getBoundingClientRect();if(!v||!v.videoWidth||!r.width)return;t.classList.toggle('fitall',(v.videoWidth>v.videoHeight)!==(r.width>r.height))};
+const RO=new ResizeObserver(es=>es.forEach(e=>fit(e.target)));
 function tile(id){
   let t=$('#t-'+id);if(t)return t;
   t=el('div','tile nocam');t.id='t-'+id;
   const v=el('video');v.autoplay=v.playsInline=true;if(id==='me')v.muted=true;
-  t.append(el('div'),v,el('span','lbl'));$('#tiles').append(t);stage();return t;
+  t.append(el('div'),v,el('span','lbl'));$('#tiles').append(t);['loadedmetadata','resize'].forEach(n=>v.addEventListener(n,()=>fit(t)));RO.observe(t);stage();return t;
 }
 function attach(id){
   const tr=pcs[id].pc.getReceivers().map(r=>r.track).filter(t=>t&&t.readyState==='live');
